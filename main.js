@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const csv = require('csv-parser')
 const {Client} = require('pg')
+const { exec } = require("child_process");
 let data = fs.readFileSync('selectors.json');
 let selectors = JSON.parse(data);
 const pgData = {
@@ -156,7 +157,17 @@ async function recentReviewsProcess(){
         console.log(error);
     }
     finally {
-        navigationController.browser.close();
+        exec("pkill chrome", (error, stdout, stderr) => {
+            if (error) {
+                console.log(`error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.log(`stderr: ${stderr}`);
+                return;
+            }
+            console.log(`stdout: ${stdout}`);
+        });
     }
 }
 
