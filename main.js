@@ -129,26 +129,35 @@ async function processReviewLinks(authenticatedPage, urls){
 }
 
 async function recentReviewsProcess(){
-    console.log("Gathering credentials... ... ...")
-    let credentials = await getCredentials();
-    console.log(credentials);
-    console.log("... ... ...Finished")
-    console.log("Gathering links... ... ...")
-    const links = await farmLinks();
-    console.log("... ... ...Finished")
-    console.log("Processing sign in... ... ...")
-    let navigationController = await processSignIn(credentials, {
-        headless:true
-    });
-    console.log("... ... ...Finished")
-    let authenticatedPage = navigationController.page;
-    authenticatedPage = await processProfileLinks(authenticatedPage, links.profiles);
-    console.log("... ... ...Finished")
-    authenticatedPage = await processReviewLinks(authenticatedPage, links.reviews);
-    console.log("... ... ...Finished")
-    console.log("Terminating browser... ... ...");
-    navigationController.browser.close();
-    console.log("... ... ...Finished");
+    try{
+        console.log("Gathering credentials... ... ...")
+        let credentials = await getCredentials();
+        console.log(credentials);
+        console.log("... ... ...Finished")
+        console.log("Gathering links... ... ...")
+        const links = await farmLinks();
+        console.log("... ... ...Finished")
+        console.log("Processing sign in... ... ...")
+        let navigationController = await processSignIn(credentials, {
+            headless:true
+        });
+        console.log("... ... ...Finished")
+        let authenticatedPage = navigationController.page;
+        authenticatedPage = await processProfileLinks(authenticatedPage, links.profiles);
+        console.log("... ... ...Finished")
+        authenticatedPage = await processReviewLinks(authenticatedPage, links.reviews);
+        console.log("... ... ...Finished")
+        console.log("Terminating browser... ... ...");
+        navigationController.browser.close();
+        console.log("... ... ...Finished");
+    }
+    catch(error){
+        console.log("======= error halted process ======");
+        console.log(error);
+    }
+    finally {
+        navigationController.browser.close();
+    }
 }
 
 async function main(){
