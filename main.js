@@ -310,7 +310,7 @@ async function purifyFollowsProcess(){
 
 async function main(){
     await recentReviewsProcess();
-    await getStats()
+    //await getStats()
     return main();
     //await purifyFollowsProcess()
 }
