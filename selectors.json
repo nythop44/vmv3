@@ -1,0 +1,21 @@
+{
+    "stats": {
+      "following": "#profile-header > div > div > div > h4:nth-child(4) > a > span.value",
+      "followers": "#profile-header > div > div > div > h4:nth-child(5) > a > span.value"
+    },
+    "login": {
+      "signInButton": "#header > section > div > div > nav > ul > li.navitem.sign-in-menu > a > span.label",
+      "password": "#password",
+      "username": "#username",
+      "continueSignInButton": "#signin > fieldset > div > div.col.buttons > div.button-container > input"
+    },
+    "films": {
+        "filmCard": "#films-browser-list-container > ul > li > div > div > a"
+    },
+    "reviews": {
+        "likeButton": "#content > div > div > section > section > ul > li > div > p > span"
+    },
+    "mainFilms":{
+        "justReviewedCard": "#live-feed > div > ul > li > div > div > a"
+    }
+}

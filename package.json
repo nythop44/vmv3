@@ -1,0 +1,11 @@
+{
+    "name": "vmv3",
+    "version": "1.0.0",
+    "dependencies": {
+        "pg": "^8.7.1",
+        "puppeteer": "^13.0.1"
+    },
+    "devDependencies": {
+        "csv-parser": "^3.0.0"
+    }
+}
