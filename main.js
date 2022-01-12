@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const csv = require('csv-parser')
+const axios = require('axios')
 const {Client} = require('pg')
 const { exec } = require("child_process");
 let data = fs.readFileSync('selectors.json');
@@ -62,6 +63,7 @@ async function processSignIn(user, options){
     return navigationController
 }
 
+/*
 async function recentReviewsLinks(delay){
     let navigationController = await navigator({
         headless:true
@@ -78,19 +80,23 @@ async function recentReviewsLinks(delay){
     await navigationController.browser.close()
     return(filmHrefs);
 }
-
+*/
 async function farmLinks(){
     let start = Date.now();
-    let hrefsMatrix = await Promise.all(Array(5).fill(0).map((_,i)=>{
+    /*let hrefsMatrix = await Promise.all(Array(5).fill(0).map((_,i)=>{
         return recentReviewsLinks(i)
-    }));
-    let result = [...new Set(hrefsMatrix.reduce((a,b)=>a.concat(b)))];
+    }));*/
+    //let result = [...new Set(hrefsMatrix.reduce((a,b)=>a.concat(b)))];
+    let result = (await axios.get("https://us-central1-corporationz.cloudfunctions.net/coretejmkc")).data["linkArray"]
     let profileLinks = result.map(link=>{
-        let username = link.split("/")[3]
-        return `https://letterboxd.com/${username}`
+        let username = link.split("/")[1]
+        return `https://letterboxd.com/${username}/`
+    });
+    let reviewLinks = result.map(link=>{
+        return `https://letterboxd.com${link}`
     });
     return {
-        reviews:result,
+        reviews:reviewLinks,
         profiles:profileLinks
     }
 }
@@ -129,15 +135,12 @@ async function processReviewLinks(authenticatedPage, urls){
     return processReviewLinks(authenticatedPage, urls.slice(0, -1))
 }
 
-async function recentReviewsProcess(){
+async function recentReviewsProcess(depth){
     let initTime = Date.now();
     try{
         console.log("Gathering credentials... ... ...")
         let credentials = await getCredentials();
         console.log(credentials);
-        console.log("... ... ...Finished")
-        console.log("Gathering links... ... ...")
-        const links = await farmLinks();
         console.log("... ... ...Finished")
         console.log("Processing sign in... ... ...")
         let navigationController = await processSignIn(credentials, {
@@ -145,10 +148,15 @@ async function recentReviewsProcess(){
         });
         console.log("... ... ...Finished")
         let authenticatedPage = navigationController.page;
-        authenticatedPage = await processProfileLinks(authenticatedPage, links.profiles);
-        console.log("... ... ...Finished")
-        authenticatedPage = await processReviewLinks(authenticatedPage, links.reviews);
-        console.log("... ... ...Finished")
+        for(let i=0; i<depth; i++){
+            console.log("Gathering links... ... ...")
+            const links = await farmLinks();
+            console.log("... ... ...Finished")
+            authenticatedPage = await processProfileLinks(authenticatedPage, links.profiles);
+            console.log("... ... ...Finished")
+            authenticatedPage = await processReviewLinks(authenticatedPage, links.reviews);
+            console.log("... ... ...Finished")
+        }
         console.log("Terminating browser... ... ...");
         navigationController.browser.close();
         console.log("... ... ...Finished");
@@ -309,7 +317,7 @@ async function purifyFollowsProcess(){
 }
 
 async function main(){
-    await recentReviewsProcess();
+    await recentReviewsProcess(5);
     //await getStats()
     return main();
     //await purifyFollowsProcess()
