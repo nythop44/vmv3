@@ -229,7 +229,7 @@ async function getStats(){
         console.log("Will use ", splices, " browsers for gathering")
         let nonFlat = [];
         for(let i=0; i<splices; i++){
-            nonFlat.push(accounts.splice(0, 5))
+            nonFlat.push(accounts.splice(0, 10))
         }
         await Promise.all(nonFlat.map(bulk=>{
             return getStatsForAccountBulk(bulk, client)
