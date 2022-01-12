@@ -130,6 +130,7 @@ async function processReviewLinks(authenticatedPage, urls){
 }
 
 async function recentReviewsProcess(){
+    let initTime = Date.now();
     try{
         console.log("Gathering credentials... ... ...")
         let credentials = await getCredentials();
@@ -168,7 +169,9 @@ async function recentReviewsProcess(){
             }
             console.log(`stdout: ${stdout}`);
         });
+        console.log("⌛ Execution took ", Date.now()-initTime, " ms! ⌛")
     }
+
 }
 
 async function getStatsForAccount(username, page, client){
