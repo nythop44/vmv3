@@ -225,7 +225,7 @@ async function getStats(){
             text:'SELECT username FROM "Accounts"'
         })).rows;
 
-        const splices = Math.ceil(accounts.length / 5);
+        const splices = Math.ceil(accounts.length / 10);
         console.log("Will use ", splices, " browsers for gathering")
         let nonFlat = [];
         for(let i=0; i<splices; i++){
@@ -245,16 +245,58 @@ async function getStats(){
         await client.end();
     }
 }
-/*
+
 async function getMaxFollowerDisparity(){
     const client = new Client(pgData);
     await client.connect();
-    let account = await client.query('SELECT username, password FROM "Accounts" INNER JOIN "FollowersSeries" ON "Accounts".username = "FollowersSeries".username')
+    let account = (await client.query({
+        text:'SELECT * FROM "Accounts" ORDER BY following-followers DESC LIMIT 1'
+    })).rows[0];
+    await client.end();
+    return account;
+}
+
+async function getNames(url){
+    let navigationController = await navigator({
+        headless:true
+    });
+    let page = navigationController.page;
+    await page.goto(url);
+    let selector = '#content > div > div > section > table > tbody > tr > td.table-person > div > h3 > a'
+    let nameHandles = await page.$$(selector);
+    let names = await Promise.all(nameHandles.map(async handle=>{
+        let property = await handle.getProperty('innerHTML');
+        const innerHtml = await property.jsonValue();
+        return innerHtml
+    }));
+    return names;
+}
+
+async function farmNames(options){
+    const baseUrl = `https://www.letterboxd.com/${options.username}/`;
+    const variableUrl = (options.realm === "followers") ? "followers" : "following";
+    const url = baseUrl + variableUrl;
+    let names = await Promise.all(Array(options.pages).fill("x").map((_,i)=>{
+        return getNames(url+`/page/${i+1}`)
+    }));
+    return names;
 }
 
 async function purifyFollowsProcess(){
     let initTime = Date.now();
     try{
+        let targetAccount = await getMaxFollowerDisparity();
+        console.log(targetAccount)
+        let followers = [];
+        let following = [];
+        let followerPages = Math.ceil(targetAccount['followers'] / 25);
+        let followingPages = Math.ceil(targetAccount['following'] / 25);
+        let names = await farmNames({
+            realm: "following",
+            pages: followingPages,
+            username:targetAccount['username']
+        })
+        console.log(names);
 
     }
     catch(error){
@@ -265,11 +307,12 @@ async function purifyFollowsProcess(){
         console.log("⌛ Execution took ", Date.now()-initTime, " ms! ⌛")
     }
 }
-*/
+
 async function main(){
     await recentReviewsProcess();
     await getStats()
     return main();
+    //await purifyFollowsProcess()
 }
 
 main().then(()=>{})
