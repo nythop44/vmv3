@@ -38,7 +38,7 @@ async function getCredentials(){
     const client = new Client(pgData);
     await client.connect();
     const user = (await client.query({
-        text:'SELECT username, password FROM "Accounts" ORDER BY last_active ASC LIMIT 1',
+        text:'SELECT username, password FROM "Accounts" WHERE NOT paused ORDER BY last_active ASC LIMIT 1',
     })).rows[0]
     await client.query({
         text: 'UPDATE "Accounts" SET last_active=now() WHERE username=$1',
