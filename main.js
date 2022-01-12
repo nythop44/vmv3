@@ -171,9 +171,75 @@ async function recentReviewsProcess(){
     }
 }
 
+async function getStatsForAccount(username, page, client){
+    const url = `https://www.letterboxd.com/${username}`;
+    await page.goto(url);
+    await page.waitForSelector(selectors.stats.following);
+    const followingCount = await page.evaluate((selector)=>{
+        return document.querySelector(selector).innerHTML;
+    }, selectors.stats.following);
+    const followersCount = await page.evaluate((selector)=>{
+        return document.querySelector(selector).innerHTML;
+    }, selectors.stats.followers);
+    console.log("User ", username, " currently has ", followersCount, " followers");
+    await client.query({
+        text:'INSERT INTO "FollowersSeries"(record, username, followers) VALUES(now(), $1, $2)',
+        values:[username, followersCount]
+    })
+    await client.query({
+        text:'INSERT INTO "FollowingSeries"(record, username, following) VALUES(now(), $1, $2)',
+        values:[username, followingCount]
+    })
+    return page
+}
+
+async function getStatsForAccountBulk(bulk, client){
+    let navigationController = await navigator({
+        headless:true
+    });
+    let page = navigationController.page;
+    for(let k=0; k<bulk.length; k++){
+        page = await getStatsForAccount(bulk[k]['username'], page, client)
+    }
+    await navigationController.browser.close();
+}
+
+async function getStats(){
+    const client = new Client(pgData);
+    try{
+        console.log("Gathering stats begins... ... ...")
+
+        await client.connect();
+        const accounts = (await client.query({
+            text:'SELECT username FROM "Accounts"'
+        })).rows;
+
+        const splices = Math.ceil(accounts.length / 5);
+        console.log("Will use ", splices, " browsers for gathering")
+        let nonFlat = [];
+        for(let i=0; i<splices; i++){
+            nonFlat.push(accounts.splice(0, 5))
+        }
+        await Promise.all(nonFlat.map(bulk=>{
+            return getStatsForAccountBulk(bulk, client)
+        }))
+        await client.end();
+        console.log("... ... ...gathering stats finished")
+    }
+    catch(error){
+        console.log("====Something went wrong with stats gathering!====")
+        console.log(error)
+    }
+    finally {
+        await client.end();
+    }
+}
+
 async function main(){
     await recentReviewsProcess();
+    await getStats()
     return main();
+
 }
 
 main().then(()=>{})
