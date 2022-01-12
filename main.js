@@ -57,7 +57,7 @@ async function processSignIn(user, options){
     await (await page.$(selectors.login.username)).type(user['username']);
     await (await page.$(selectors.login.password)).type(user['password']);
     await (await page.$(selectors.login.continueSignInButton)).click();
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(5000);
     return navigationController
 }
 
@@ -101,7 +101,7 @@ async function processProfileLinks(authenticatedPage, urls){
     }
     let cn = "ajax-click-action button -small -follow js-button-follow";
     await authenticatedPage.goto(urls[urls.length-1]);
-    await authenticatedPage.waitForTimeout(250);
+    await authenticatedPage.waitForTimeout(2000);
     await authenticatedPage.evaluate((cn)=>{
         let ele = document.getElementsByClassName(cn)[0];
         console.log(ele);
@@ -118,7 +118,7 @@ async function processReviewLinks(authenticatedPage, urls){
     }
     let cn = "svg-action -like ajax-click-action";
     await authenticatedPage.goto(urls[urls.length-1]);
-    await authenticatedPage.waitForTimeout(1250);
+    await authenticatedPage.waitForTimeout(2000);
     await authenticatedPage.evaluate((cn)=>{
         let ele = document.getElementsByClassName(cn)[0];
         console.log(ele);
