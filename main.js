@@ -193,6 +193,14 @@ async function getStatsForAccount(username, page, client){
         text:'INSERT INTO "FollowingSeries"(record, username, following) VALUES(now(), $1, $2)',
         values:[username, followingCount]
     })
+    await client.query({
+        text:'INSERT INTO "FollowingSeries"(record, username, following) VALUES(now(), $1, $2)',
+        values:[username, followingCount]
+    })
+    await client.query({
+        text:'UPDATE "Accounts" SET followers=$1, following=$2 WHERE username=$3',
+        values:[followersCount, followingCount, username]
+    })
     return page
 }
 
@@ -237,12 +245,31 @@ async function getStats(){
         await client.end();
     }
 }
+/*
+async function getMaxFollowerDisparity(){
+    const client = new Client(pgData);
+    await client.connect();
+    let account = await client.query('SELECT username, password FROM "Accounts" INNER JOIN "FollowersSeries" ON "Accounts".username = "FollowersSeries".username')
+}
 
+async function purifyFollowsProcess(){
+    let initTime = Date.now();
+    try{
+
+    }
+    catch(error){
+        console.log("======= error halted process ======");
+        console.log(error);
+    }
+    finally {
+        console.log("⌛ Execution took ", Date.now()-initTime, " ms! ⌛")
+    }
+}
+*/
 async function main(){
     await recentReviewsProcess();
     await getStats()
     return main();
-
 }
 
 main().then(()=>{})
