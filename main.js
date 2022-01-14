@@ -35,12 +35,61 @@ async function navigator(options){
     }
 }
 
+async function unfollowUsers(authenticatedPage, pool){
+    if(pool.length<1){
+        return
+    }
+    let cn = "ajax-click-action button -small -unfollow js-button-unfollow";
+    await authenticatedPage.goto(`https://letterboxd.com/${pool[0]}`);
+    await authenticatedPage.waitForTimeout(2000);
+    await authenticatedPage.waitForTimeout(2000);
+    await authenticatedPage.evaluate((cn)=>{
+        let ele = document.getElementsByClassName(cn)[0];
+        console.log(ele);
+        ele.click();
+    }, cn);
+    await authenticatedPage.waitForTimeout(3000);
+    console.log("Unfollowed user ", pool[0], " ", pool.length-1, " targets left");
+    return await unfollowUsers(authenticatedPage, pool.slice(0, -1));
+}
+
+async function handleOverlapExcessProcess(){
+    console.log("Handling excess overlap begins ... ... ...");
+    let data = (await axios.get("https://us-central1-corporationz.cloudfunctions.net/unftejmkc"));
+    let credentials = {
+        username: data.username,
+        password: data.password
+    }
+    console.log("Signing in to ", credentials, " for purge... ... ...")
+    let navigationController = await processSignIn(credentials, {
+        headless:true
+    });
+    console.log("... ... ...Success")
+    let authenticatedPage = navigationController.page;
+    await unfollowUsers(authenticatedPage, data.targets);
+    console.log("... ... ... Finished");
+
+    console.log("Terminating browser... ... ...");
+    await navigationController.browser.close();
+    console.log("... ... ...Finished");
+
+    console.log("Updating stats... ... ...");
+    await axios.get("https://us-central1-corporationz.cloudfunctions.net/coretejmkc");
+    console.log("... ... ...Finished");
+
+    return getCredentials();
+}
+
 async function getCredentials(){
     const client = new Client(pgData);
     await client.connect();
     const user = (await client.query({
         text:'SELECT username, password FROM "Accounts" WHERE NOT paused ORDER BY last_active ASC LIMIT 1',
-    })).rows[0]
+    })).rows
+    if (user.length < 1){
+        console.log("No eligible credentials were found!")
+        return (await handleOverlapExcessProcess())
+    }
     await client.query({
         text: 'UPDATE "Accounts" SET last_active=now() WHERE username=$1',
         values:[user['username']]
@@ -158,7 +207,7 @@ async function recentReviewsProcess(depth){
             console.log("... ... ...Finished")
         }
         console.log("Terminating browser... ... ...");
-        navigationController.browser.close();
+        await navigationController.browser.close();
         console.log("... ... ...Finished");
     }
     catch(error){
