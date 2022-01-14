@@ -39,7 +39,7 @@ async function unfollowUsers(authenticatedPage, pool){
     if(pool.length<1){
         return
     }
-    let cn = "ajax-click-action button -small -unfollow js-button-unfollow";
+    let cn = "ajax-click-action button -small -following js-button-following";
     await authenticatedPage.goto(`https://letterboxd.com/${pool[0]}`);
     await authenticatedPage.waitForTimeout(2000);
     await authenticatedPage.waitForTimeout(2000);
