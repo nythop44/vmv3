@@ -184,7 +184,7 @@ async function processReviewLinks(authenticatedPage, urls){
     return processReviewLinks(authenticatedPage, urls.slice(0, -1))
 }
 
-async function recentReviewsProcess(depth){
+async function recentReviewsProcess(options){
     let initTime = Date.now();
     try{
         console.log("Gathering credentials... ... ...")
@@ -197,12 +197,14 @@ async function recentReviewsProcess(depth){
         });
         console.log("... ... ...Finished")
         let authenticatedPage = navigationController.page;
-        for(let i=0; i<depth; i++){
+        for(let i=0; i<options.depth; i++){
             console.log("Gathering links... ... ...")
             const links = await farmLinks();
             console.log("... ... ...Finished")
-            authenticatedPage = await processProfileLinks(authenticatedPage, links.profiles);
-            console.log("... ... ...Finished")
+            if(options.follows) {
+                authenticatedPage = await processProfileLinks(authenticatedPage, links.profiles);
+                console.log("... ... ...Finished");
+            }
             authenticatedPage = await processReviewLinks(authenticatedPage, links.reviews);
             console.log("... ... ...Finished")
         }
@@ -366,7 +368,11 @@ async function purifyFollowsProcess(){
 }
 
 async function main(){
-    await recentReviewsProcess(5);
+    const options = {
+        depth:10,
+        follows:false
+    }
+    await recentReviewsProcess(options);
     //await getStats()
     return main();
     //await purifyFollowsProcess()
