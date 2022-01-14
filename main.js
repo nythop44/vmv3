@@ -55,7 +55,7 @@ async function unfollowUsers(authenticatedPage, pool){
 
 async function handleOverlapExcessProcess(){
     console.log("Handling excess overlap begins ... ... ...");
-    let data = (await axios.get("https://us-central1-corporationz.cloudfunctions.net/unftejmkc"));
+    let data = (await axios.get("https://us-central1-corporationz.cloudfunctions.net/unftejmkc")).data;
     let credentials = {
         username: data.username,
         password: data.password
