@@ -40,7 +40,7 @@ async function unfollowUsers(authenticatedPage, pool){
         return
     }
     let cn = "ajax-click-action button -small -following js-button-following";
-    await authenticatedPage.goto(`https://letterboxd.com/${pool[0]}`);
+    await authenticatedPage.goto(`https://letterboxd.com/${pool[pool.length-1]}`);
     await authenticatedPage.waitForTimeout(2000);
     await authenticatedPage.waitForTimeout(2000);
     await authenticatedPage.evaluate((cn)=>{
@@ -49,7 +49,7 @@ async function unfollowUsers(authenticatedPage, pool){
         ele.click();
     }, cn);
     await authenticatedPage.waitForTimeout(3000);
-    console.log("Unfollowed user ", pool[0], " ", pool.length-1, " targets left");
+    console.log("Unfollowed user ", pool[pool.length-1], " ", pool.length-1, " targets left");
     return await unfollowUsers(authenticatedPage, pool.slice(0, -1));
 }
 
