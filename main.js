@@ -92,7 +92,7 @@ async function getCredentials(){
     }
     await client.query({
         text: 'UPDATE "Accounts" SET last_active=now() WHERE username=$1',
-        values:[user['username']]
+        values:[user[0]['username']]
     });
     await client.end();
     return user
