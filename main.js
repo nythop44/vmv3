@@ -188,7 +188,7 @@ async function recentReviewsProcess(depth){
     let initTime = Date.now();
     try{
         console.log("Gathering credentials... ... ...")
-        let credentials = await getCredentials();
+        let credentials = (await getCredentials())[0];
         console.log(credentials);
         console.log("... ... ...Finished")
         console.log("Processing sign in... ... ...")
