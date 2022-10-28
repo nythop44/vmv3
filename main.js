@@ -6,13 +6,6 @@ const {Client} = require('pg')
 const { exec } = require("child_process");
 let data = fs.readFileSync('selectors.json');
 let selectors = JSON.parse(data);
-const pgData = {
-    host:'107.178.218.81',
-    password:'linecon0',
-    user:'postgres',
-    database:'tejmkc',
-    port:'5432'
-}
 
 async function navigator(options){
     const browser = await puppeteer.launch({
